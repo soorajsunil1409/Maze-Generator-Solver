@@ -10,6 +10,8 @@ pygame.init()
 screen = pygame.display.set_mode((600, 600))
 clock = pygame.time.Clock()
 
+fast_solve = False
+
 def import_maze() -> list[list[Cell]]:
     f_path = "maze.dat"
 
@@ -68,8 +70,9 @@ def astar(draw, board: list[list[AStarCell]]):
         if current == end:
             return reconstruct_path(current, came_from)
 
-        path = reconstruct_path(current, came_from)
-        draw_path(path)
+        if not fast_solve:
+            path = reconstruct_path(current, came_from)
+            draw_path(path)
 
         openSet.remove(current)
         neighbours = b.get_maze_neighbours(current, board)
@@ -103,6 +106,13 @@ def draw_path(path, color=(125, 125, 125)):
 
     pygame.display.flip()
 
+
+def export_maze():
+    with open("maze.dat", "wb") as file:
+        pickle.dump(board, file)
+        file.flush()
+
+
 while True:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
@@ -114,6 +124,11 @@ while True:
                 path = []
             if event.key == pygame.K_RETURN and not path:
                 path = astar(lambda: b.draw(screen, board), board)
+            if event.key == pygame.K_f:
+                fast_solve = not fast_solve
+            if event.key == pygame.K_e:
+                export_maze()
+
 
     b.draw(screen, board)
     draw_path(path, (100, 100, 255))
